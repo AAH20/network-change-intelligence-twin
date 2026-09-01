@@ -1,0 +1,439 @@
+{
+  "schema_version": "netchange/v1",
+  "scenario": "BGP preference change across branch, Azure, AWS and CloudStack",
+  "baseline": [
+    {
+      "intent": {
+        "name": "revenue inference path",
+        "source": "branch",
+        "destination": "cloudstack",
+        "max_latency_ms": 50,
+        "min_bandwidth_mbps": 1000,
+        "encryption_required": true,
+        "max_cost_per_gb": 0.08,
+        "transactions_per_minute": 800,
+        "revenue_per_transaction_usd": 1.2
+      },
+      "path": {
+        "nodes": [
+          "branch",
+          "azure",
+          "cloudstack"
+        ],
+        "links": [
+          "expressroute",
+          "private-interconnect"
+        ],
+        "routing_weight": 20.0,
+        "latency_ms": 20,
+        "bandwidth_mbps": 10000,
+        "encrypted": true,
+        "cost_per_gb": 0.03
+      },
+      "passed": true,
+      "violations": []
+    }
+  ],
+  "candidate": [
+    {
+      "intent": {
+        "name": "revenue inference path",
+        "source": "branch",
+        "destination": "cloudstack",
+        "max_latency_ms": 50,
+        "min_bandwidth_mbps": 1000,
+        "encryption_required": true,
+        "max_cost_per_gb": 0.08,
+        "transactions_per_minute": 800,
+        "revenue_per_transaction_usd": 1.2
+      },
+      "path": {
+        "nodes": [
+          "branch",
+          "internet",
+          "aws",
+          "cloudstack"
+        ],
+        "links": [
+          "branch-internet",
+          "internet-aws",
+          "aws-cloudstack"
+        ],
+        "routing_weight": 40.0,
+        "latency_ms": 70,
+        "bandwidth_mbps": 1000,
+        "encrypted": false,
+        "cost_per_gb": 0.14
+      },
+      "passed": false,
+      "violations": [
+        "latency",
+        "encryption",
+        "egress_cost"
+      ]
+    }
+  ],
+  "failure_replay": [
+    {
+      "name": "private interconnect failure",
+      "intents": [
+        {
+          "intent": {
+            "name": "revenue inference path",
+            "source": "branch",
+            "destination": "cloudstack",
+            "max_latency_ms": 50,
+            "min_bandwidth_mbps": 1000,
+            "encryption_required": true,
+            "max_cost_per_gb": 0.08,
+            "transactions_per_minute": 800,
+            "revenue_per_transaction_usd": 1.2
+          },
+          "path": {
+            "nodes": [
+              "branch",
+              "internet",
+              "aws",
+              "cloudstack"
+            ],
+            "links": [
+              "branch-internet",
+              "internet-aws",
+              "aws-cloudstack"
+            ],
+            "routing_weight": 40.0,
+            "latency_ms": 70,
+            "bandwidth_mbps": 1000,
+            "encrypted": false,
+            "cost_per_gb": 0.14
+          },
+          "passed": false,
+          "violations": [
+            "latency",
+            "encryption",
+            "egress_cost"
+          ]
+        }
+      ],
+      "passed": false
+    },
+    {
+      "name": "AWS transit failure",
+      "intents": [
+        {
+          "intent": {
+            "name": "revenue inference path",
+            "source": "branch",
+            "destination": "cloudstack",
+            "max_latency_ms": 50,
+            "min_bandwidth_mbps": 1000,
+            "encryption_required": true,
+            "max_cost_per_gb": 0.08,
+            "transactions_per_minute": 800,
+            "revenue_per_transaction_usd": 1.2
+          },
+          "path": {
+            "nodes": [
+              "branch",
+              "azure",
+              "cloudstack"
+            ],
+            "links": [
+              "expressroute",
+              "private-interconnect"
+            ],
+            "routing_weight": 70.0,
+            "latency_ms": 20,
+            "bandwidth_mbps": 10000,
+            "encrypted": true,
+            "cost_per_gb": 0.03
+          },
+          "passed": true,
+          "violations": []
+        }
+      ],
+      "passed": true
+    }
+  ],
+  "economics": {
+    "revenue_per_minute_usd": 960.0,
+    "revenue_at_risk_usd": 43200.0,
+    "modeled_avoided_loss_usd": 32400.0,
+    "validation_cost_usd": 2500,
+    "modeled_net_value_usd": 29900.0
+  },
+  "decision": {
+    "status": "hold",
+    "automatic_execution": false,
+    "newly_failed_intents": 1,
+    "required_next_step": "revise change"
+  },
+  "claim_boundary": "Deterministic graph replay with synthetic topology, traffic and economics; no vendor device, cloud account, Batfish, Containerlab or production network was operated.",
+  "receipt_sha256": "d245f9c94c801180608eb265e0f5b80cb7c081404ffdafd785183837f41d76c3",
+  "kpi_scorecard": {
+    "schema_version": "netchange/kpi/v1",
+    "summary": {
+      "passed": 12,
+      "total": 25,
+      "attainment_pct": 48.0
+    },
+    "hard_gates": {
+      "no_autonomous_execution": true,
+      "no_unauthorized_paths": true,
+      "complete_evidence": true
+    },
+    "metrics": [
+      {
+        "name": "revenue at risk",
+        "category": "business",
+        "value": 43200.0,
+        "unit": "USD",
+        "target": 0,
+        "direction": "lower",
+        "passed": false,
+        "evidence": "modeled synthetic economics"
+      },
+      {
+        "name": "modeled avoided loss",
+        "category": "business",
+        "value": 32400.0,
+        "unit": "USD",
+        "target": 10000,
+        "direction": "higher",
+        "passed": true,
+        "evidence": "modeled synthetic economics"
+      },
+      {
+        "name": "change validation ROI",
+        "category": "business",
+        "value": 12.96,
+        "unit": "ratio",
+        "target": 3,
+        "direction": "higher",
+        "passed": true,
+        "evidence": "modeled synthetic economics"
+      },
+      {
+        "name": "intent compliance",
+        "category": "change",
+        "value": 0.0,
+        "unit": "%",
+        "target": 100,
+        "direction": "higher",
+        "passed": false,
+        "evidence": "deterministic replay"
+      },
+      {
+        "name": "failure scenario pass rate",
+        "category": "change",
+        "value": 50.0,
+        "unit": "%",
+        "target": 100,
+        "direction": "higher",
+        "passed": false,
+        "evidence": "deterministic replay"
+      },
+      {
+        "name": "predeployment detection",
+        "category": "change",
+        "value": 100,
+        "unit": "%",
+        "target": 100,
+        "direction": "higher",
+        "passed": true,
+        "evidence": "deterministic replay"
+      },
+      {
+        "name": "change success rate",
+        "category": "change",
+        "value": 96,
+        "unit": "%",
+        "target": 98,
+        "direction": "higher",
+        "passed": false,
+        "evidence": "synthetic observation"
+      },
+      {
+        "name": "rollback success",
+        "category": "change",
+        "value": 100,
+        "unit": "%",
+        "target": 100,
+        "direction": "higher",
+        "passed": true,
+        "evidence": "synthetic observation"
+      },
+      {
+        "name": "latency p95",
+        "category": "network",
+        "value": 70,
+        "unit": "ms",
+        "target": 50,
+        "direction": "lower",
+        "passed": false,
+        "evidence": "deterministic replay"
+      },
+      {
+        "name": "minimum path bandwidth",
+        "category": "network",
+        "value": 1000,
+        "unit": "Mbps",
+        "target": 1000,
+        "direction": "higher",
+        "passed": true,
+        "evidence": "deterministic replay"
+      },
+      {
+        "name": "packet loss",
+        "category": "network",
+        "value": 0.12,
+        "unit": "%",
+        "target": 0.1,
+        "direction": "lower",
+        "passed": false,
+        "evidence": "synthetic observation"
+      },
+      {
+        "name": "jitter p95",
+        "category": "network",
+        "value": 8,
+        "unit": "ms",
+        "target": 10,
+        "direction": "lower",
+        "passed": true,
+        "evidence": "synthetic observation"
+      },
+      {
+        "name": "route convergence",
+        "category": "network",
+        "value": 24,
+        "unit": "seconds",
+        "target": 30,
+        "direction": "lower",
+        "passed": true,
+        "evidence": "synthetic observation"
+      },
+      {
+        "name": "encrypted path coverage",
+        "category": "security",
+        "value": 0.0,
+        "unit": "%",
+        "target": 100,
+        "direction": "higher",
+        "passed": false,
+        "evidence": "deterministic replay"
+      },
+      {
+        "name": "segmentation policy coverage",
+        "category": "security",
+        "value": 100,
+        "unit": "%",
+        "target": 100,
+        "direction": "higher",
+        "passed": true,
+        "evidence": "synthetic observation"
+      },
+      {
+        "name": "unauthorized paths",
+        "category": "security",
+        "value": 0,
+        "unit": "count",
+        "target": 0,
+        "direction": "lower",
+        "passed": true,
+        "evidence": "synthetic observation"
+      },
+      {
+        "name": "configuration compliance",
+        "category": "compliance",
+        "value": 98.5,
+        "unit": "%",
+        "target": 99,
+        "direction": "higher",
+        "passed": false,
+        "evidence": "synthetic observation"
+      },
+      {
+        "name": "evidence completeness",
+        "category": "compliance",
+        "value": 100,
+        "unit": "%",
+        "target": 100,
+        "direction": "higher",
+        "passed": true,
+        "evidence": "synthetic observation"
+      },
+      {
+        "name": "MTTD",
+        "category": "operations",
+        "value": 4,
+        "unit": "minutes",
+        "target": 5,
+        "direction": "lower",
+        "passed": true,
+        "evidence": "synthetic observation"
+      },
+      {
+        "name": "MTTR",
+        "category": "operations",
+        "value": 28,
+        "unit": "minutes",
+        "target": 30,
+        "direction": "lower",
+        "passed": true,
+        "evidence": "synthetic observation"
+      },
+      {
+        "name": "human minutes per change",
+        "category": "operations",
+        "value": 42,
+        "unit": "minutes",
+        "target": 30,
+        "direction": "lower",
+        "passed": false,
+        "evidence": "synthetic observation"
+      },
+      {
+        "name": "changes validated in twin",
+        "category": "automation",
+        "value": 75,
+        "unit": "%",
+        "target": 100,
+        "direction": "higher",
+        "passed": false,
+        "evidence": "synthetic observation"
+      },
+      {
+        "name": "network automation coverage",
+        "category": "automation",
+        "value": 82,
+        "unit": "%",
+        "target": 95,
+        "direction": "higher",
+        "passed": false,
+        "evidence": "synthetic observation"
+      },
+      {
+        "name": "IaC coverage",
+        "category": "automation",
+        "value": 90,
+        "unit": "%",
+        "target": 100,
+        "direction": "higher",
+        "passed": false,
+        "evidence": "synthetic observation"
+      },
+      {
+        "name": "cloud egress per transaction",
+        "category": "finops",
+        "value": 0.014,
+        "unit": "USD",
+        "target": 0.01,
+        "direction": "lower",
+        "passed": false,
+        "evidence": "synthetic observation"
+      }
+    ],
+    "claim_boundary": "Deterministic synthetic results and disclosed modeled observations are not production KPIs."
+  }
+}

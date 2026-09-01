@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "netchange-twin"
+version = "0.1.0"
+description = "AI network automation, cloud networking, digital twin, DevOps and infrastructure-as-code change assurance"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+dependencies = []
+
+[project.scripts]
+netchange-twin = "netchange.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

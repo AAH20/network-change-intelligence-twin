@@ -1,0 +1,21 @@
+name: netchange-twin
+topology:
+  nodes:
+    branch:
+      kind: linux
+      image: quay.io/frrouting/frr:10.2.1
+      binds: ["configs/branch/daemons:/etc/frr/daemons", "configs/branch/frr.conf:/etc/frr/frr.conf"]
+    azure-edge:
+      kind: linux
+      image: quay.io/frrouting/frr:10.2.1
+    aws-edge:
+      kind: linux
+      image: quay.io/frrouting/frr:10.2.1
+    cloudstack-edge:
+      kind: linux
+      image: quay.io/frrouting/frr:10.2.1
+  links:
+    - endpoints: ["branch:eth1", "azure-edge:eth1"]
+    - endpoints: ["azure-edge:eth2", "cloudstack-edge:eth1"]
+    - endpoints: ["branch:eth2", "aws-edge:eth1"]
+    - endpoints: ["aws-edge:eth2", "cloudstack-edge:eth2"]

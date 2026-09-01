@@ -1,0 +1,16 @@
+{
+  "name":"BGP preference change across branch, Azure, AWS and CloudStack",
+  "nodes":[{"id":"branch","type":"campus"},{"id":"azure","type":"azure"},{"id":"internet","type":"wan"},{"id":"aws","type":"aws"},{"id":"cloudstack","type":"private-cloud"}],
+  "links":[
+    {"id":"expressroute","a":"branch","b":"azure","latency_ms":12,"bandwidth_mbps":10000,"routing_weight":10,"encrypted":true,"cost_per_gb":0.02},
+    {"id":"private-interconnect","a":"azure","b":"cloudstack","latency_ms":8,"bandwidth_mbps":10000,"routing_weight":10,"encrypted":true,"cost_per_gb":0.01},
+    {"id":"branch-internet","a":"branch","b":"internet","latency_ms":25,"bandwidth_mbps":1000,"routing_weight":20,"encrypted":false,"cost_per_gb":0.01},
+    {"id":"internet-aws","a":"internet","b":"aws","latency_ms":15,"bandwidth_mbps":2000,"routing_weight":10,"encrypted":true,"cost_per_gb":0.04},
+    {"id":"aws-cloudstack","a":"aws","b":"cloudstack","latency_ms":30,"bandwidth_mbps":2000,"routing_weight":10,"encrypted":true,"cost_per_gb":0.09}
+  ],
+  "intents":[{"name":"revenue inference path","source":"branch","destination":"cloudstack","max_latency_ms":50,"min_bandwidth_mbps":1000,"encryption_required":true,"max_cost_per_gb":0.08,"transactions_per_minute":800,"revenue_per_transaction_usd":1.2}],
+  "changes":[{"operation":"update_link","link_id":"expressroute","values":{"routing_weight":60}}],
+  "failure_scenarios":[{"name":"private interconnect failure","failed_links":["private-interconnect"]},{"name":"AWS transit failure","failed_links":["aws-cloudstack"]}],
+  "economics":{"assumed_incident_minutes":45,"predeployment_detection_probability":0.75,"validation_cost_usd":2500},
+  "kpi_observations":{"change_success_pct":96,"rollback_success_pct":100,"packet_loss_pct":0.12,"jitter_p95_ms":8,"route_convergence_seconds":24,"segmentation_policy_pct":100,"unauthorized_paths":0,"configuration_compliance_pct":98.5,"evidence_completeness_pct":100,"mttd_minutes":4,"mttr_minutes":28,"human_minutes_per_change":42,"twin_validation_pct":75,"network_automation_pct":82,"iac_coverage_pct":90,"egress_cost_per_transaction_usd":0.014}
+}
